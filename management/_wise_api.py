@@ -5,6 +5,9 @@
 Created on 2. may. 2014
 
 @author: polz
+
+REWRITE THIS using https://wtt3.docs.apiary.io/#
+
 '''
 
 from bs4 import BeautifulSoup
