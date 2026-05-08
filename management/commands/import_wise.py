@@ -6,17 +6,14 @@ Created on 2. may. 2014
 @author: polz
 '''
 
-from django.core.management.base import BaseCommand
-from django.utils.text import slugify
-from django.utils.timezone import get_default_timezone
-from django.conf import settings
-
-import friprosveta.models
 import reservations.models
+from django.core.management.base import BaseCommand
+from django.db import transaction
+from django.utils.text import slugify
+
 from reservations_connect.management._wise_scrape import get_wise_reservations
 from reservations_connect.models import *
-from django.db import transaction
-from datetime import timedelta, datetime, time
+
 
 class Command(BaseCommand):
     '''

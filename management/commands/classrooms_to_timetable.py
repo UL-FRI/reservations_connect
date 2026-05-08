@@ -6,12 +6,13 @@ Created on 2. may. 2014
 @author: polz
 '''
 
+import reservations.models
+import timetable.models
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-import reservations.models
 import reservations_connect.models
-import timetable.models
+
 
 class Command(BaseCommand):
     

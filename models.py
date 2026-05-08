@@ -1,25 +1,25 @@
-from django.db import models
 import reservations.models
-import friprosveta.models
-import timetable.models
+from django.db import models
+
 
 class ImportBatch(models.Model):
-    def __unicode__(self):
-        return u"{0}:{1} {2} ({3} reservations)".format(self.id, self.time, self.source, len(self.reservations.all()))
     time = models.DateTimeField(auto_now_add=True)
     source = models.TextField()
     reservations = models.ManyToManyField(reservations.models.Reservation)
     created_reservables = models.ManyToManyField('ForeignReservable', related_name = 'created_by_import')
     updated_reservables = models.ManyToManyField('ForeignReservable', related_name = 'modified_by_import')
 
+    def __str__(self):
+        return "{0}:{1} {2} ({3} reservations)".format(self.id, self.time, self.source, len(self.reservations.all()))
+
 class ForeignReservable(models.Model):
     def __unicode__(self):
         return unicode(self.reservable)
-    reservable = models.ForeignKey(reservations.models.Reservable)
+    reservable = models.ForeignKey(reservations.models.Reservable, on_delete=models.CASCADE)
 
 class FriprosvetaActivity(ForeignReservable):
     type = "activity"
-    # foreign = models.ForeignKey(timetable.models.Activity, null=True)
+    # foreign = models.ForeignKey(timetable.models.Activity, null=True, on_delete=models.CASCADE)
     foreign_id = models.IntegerField()
     @classmethod
     def by_timetable(cls, tt):
@@ -28,7 +28,7 @@ class FriprosvetaActivity(ForeignReservable):
 
 class FriprosvetaTeacher(ForeignReservable):
     type = "teacher"
-    # foreign = models.ForeignKey(friprosveta.models.Teacher, null=True)
+    # foreign = models.ForeignKey(friprosveta.models.Teacher, null=True, on_delete=models.CASCADE)
     foreign_id = models.IntegerField()
     @classmethod
     def by_timetable(cls, tt):
@@ -37,7 +37,7 @@ class FriprosvetaTeacher(ForeignReservable):
 
 class TimetableClassroom(ForeignReservable):
     type = "classroom"
-    # foreign = models.ForeignKey(timetable.models.Classroom, null=True)
+    # foreign = models.ForeignKey(timetable.models.Classroom, null=True, on_delete=models.CASCADE)
     foreign_id = models.IntegerField()
     @classmethod
     def by_timetable(cls, tt):
@@ -46,7 +46,7 @@ class TimetableClassroom(ForeignReservable):
 
 class TimetableGroup(ForeignReservable):
     type = "group"
-    # foreign = models.ForeignKey(timetable.models.Group, null=True)
+    # foreign = models.ForeignKey(timetable.models.Group, null=True, on_delete=models.CASCADE)
     foreign_id = models.IntegerField()
     @classmethod
     def by_timetable(cls, tt):
@@ -78,7 +78,7 @@ wise_classes = [WiseIzvajalec, WiseSkupina, WiseProstor, WiseActivity]
 class MetronikRoom(models.Model):
     def __unicode__(self):
         return u"{0} -> {1}".format(self.arhitektura, self.reservable)
-    reservable = models.ForeignKey(reservations.models.Reservable, null=True)
+    reservable = models.ForeignKey(reservations.models.Reservable, null=True, on_delete=models.CASCADE)
     arhitektura = models.CharField(max_length=256, blank=True, null=True)
     tehnologija = models.CharField(max_length=256, blank=True, null=True)
     opis = models.CharField(max_length=256, blank=True, null=True)

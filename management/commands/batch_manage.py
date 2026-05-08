@@ -7,15 +7,10 @@ Created on 2. may. 2014
 '''
 
 from django.core.management.base import BaseCommand
-from django.utils.text import slugify
-from django.utils.timezone import get_default_timezone
-
-import friprosveta.models
-import reservations.models
-from reservations_connect.models import *
-from django.db import transaction
-from datetime import timedelta, datetime, time
 from django.utils import timezone
+
+from reservations_connect.models import *
+
 
 class Command(BaseCommand):
     '''
@@ -45,8 +40,6 @@ class Command(BaseCommand):
         for i in ImportBatch.objects.all():
             print(i)
     def handle(self, *args, **options):
-        #parser = argparse.ArgumentParser(description='Enroll students into subjects for a given timetable.', epilog="Copyright polz")
-        #parser.add_argument('--timetable', )
         d = {
             'remove_reservations': self.remove_reservations,
             'remove_future_reservations': self.remove_future_reservations,

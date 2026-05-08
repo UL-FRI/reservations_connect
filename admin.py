@@ -1,6 +1,13 @@
 from django.contrib import admin
+from import_export.admin import ImportExportActionModelAdmin
+
 from reservations_connect.models import *
+
 # Register your models here.
+
+class MetronikRoomAdmin(ImportExportActionModelAdmin):
+    model = MetronikRoom
+
 admin.site.register(ImportBatch)
 admin.site.register(FriprosvetaActivity)
 admin.site.register(FriprosvetaTeacher)
@@ -12,4 +19,4 @@ admin.site.register(WiseSkupina)
 admin.site.register(WiseProstor)
 admin.site.register(WiseActivity)
 
-admin.site.register(MetronikRoom)
+admin.site.register(MetronikRoom, MetronikRoomAdmin)

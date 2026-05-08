@@ -1,17 +1,12 @@
 # -*- coding: utf-8 -*-
-import sys
 import logging
-
+import sys
+from collections import namedtuple
+from datetime import datetime, time, timedelta
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now
-from django.conf import settings
 
-from collections import namedtuple
 from reservations_connect.models import MetronikRoom
-from datetime import timedelta, datetime, time
-
-import suds
-
 
 logging.basicConfig(level=logging.INFO)
 
