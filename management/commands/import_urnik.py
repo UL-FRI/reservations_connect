@@ -23,7 +23,7 @@ from reservations_connect.fri_urnik.api import (
     get_allocations,
     get_current_timetable_slug,
 )
-from reservations_connect.models import ImportBatch
+from reservations_connect.models import FriprosvetaTeacher, ImportBatch, TimetableClassroom
 
 
 class Command(BaseCommand):
@@ -131,7 +131,7 @@ class Command(BaseCommand):
             logging.info("Importing %d allocations for %s", len(allocs), day)
 
             for alloc in allocs:
-                # TImezone: Europe/Ljubljana
+                # Timezone: Europe/Ljubljana
                 start_dt = datetime.combine(
                     day, alloc.start, tzinfo=ZoneInfo("Europe/Ljubljana")
                 )
@@ -165,16 +165,23 @@ class Command(BaseCommand):
 @lru_cache(maxsize=None)
 def lookup_teacher(teacher_str: str, reservableset: ReservableSet) -> Reservable | None:
     # TODO: handle this better when we have IDs available
-    teacher, created = Reservable.objects.get_or_create(
-        type="teacher",
-        slug=slugify(teacher_str),
-        defaults=dict(
-            name=teacher_str,
-        ),
-    )
-    if created:
-        reservableset.reservables.add(teacher)
-    return teacher
+    foreign_id = "fri-teacher-" + slugify(teacher_str)
+    
+    try:
+        fr = FriprosvetaTeacher.objects.get(foreign_id=foreign_id)
+        return fr.reservable
+    except FriprosvetaTeacher.DoesNotExist:
+        teacher, created = Reservable.objects.get_or_create(
+            type="teacher",
+            slug=slugify(teacher_str),
+            defaults=dict(
+                name=teacher_str,
+            ),
+        )
+        FriprosvetaTeacher.objects.create(reservable=teacher,foreign_id=foreign_id)
+        if created:
+            reservableset.reservables.add(teacher)
+        return teacher
 
 
 CLASSROOM_RE = re.compile(r".+ \((.+)\)")
@@ -182,18 +189,26 @@ CLASSROOM_RE = re.compile(r".+ \((.+)\)")
 
 @lru_cache(maxsize=None)
 def lookup_classroom(classroom_name: str) -> Reservable | None:
+    # TODO: handle this better when we have IDs available
     match = CLASSROOM_RE.match(classroom_name)
     if not match:
         logging.warning("Classroom is not in correct format: %s", classroom_name)
         return
-
-    slug = match.group(1)
-
+    foreign_id = "fri-" + match.group(1).lower()
+    
     try:
-        return Reservable.objects.get(type="classroom", slug=slug)
-    except Reservable.DoesNotExist:
-        logging.warning("Classroom with slug '%s' not found.", slug)
-        return
+        fr = TimetableClassroom.objects.get(foreign_id=foreign_id)
+        return fr.reservable
+    except TimetableClassroom.DoesNotExist:
+        r, created = Reservable.objects.get_or_create(
+            type="classroom",
+            slug=foreign_id,
+            defaults=dict(
+                name=classroom_name,
+            ),
+        )
+        TimetableClassroom.objects.create(reservable=r,foreign_id=foreign_id)
+        return r
 
 
 def daterange(start_date: date, end_date: date) -> Iterable[date]:

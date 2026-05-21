@@ -13,45 +13,23 @@ class ImportBatch(models.Model):
         return "{0}:{1} {2} ({3} reservations)".format(self.id, self.time, self.source, len(self.reservations.all()))
 
 class ForeignReservable(models.Model):
-    def __unicode__(self):
-        return unicode(self.reservable)
     reservable = models.ForeignKey(reservations.models.Reservable, on_delete=models.CASCADE)
 
 class FriprosvetaActivity(ForeignReservable):
     type = "activity"
-    # foreign = models.ForeignKey(timetable.models.Activity, null=True, on_delete=models.CASCADE)
     foreign_id = models.IntegerField()
-    @classmethod
-    def by_timetable(cls, tt):
-        return tt.activities.distinct()
-#        return cls.objects.filter(foreign__activityset__timetable = tt).distinct()
 
 class FriprosvetaTeacher(ForeignReservable):
     type = "teacher"
-    # foreign = models.ForeignKey(friprosveta.models.Teacher, null=True, on_delete=models.CASCADE)
     foreign_id = models.IntegerField()
-    @classmethod
-    def by_timetable(cls, tt):
-        return tt.teachers.distinct()
-#        return cls.objects.filter(foreign__activity__activityset__timetable = tt).distinct()
 
 class TimetableClassroom(ForeignReservable):
     type = "classroom"
-    # foreign = models.ForeignKey(timetable.models.Classroom, null=True, on_delete=models.CASCADE)
     foreign_id = models.IntegerField()
-    @classmethod
-    def by_timetable(cls, tt):
-        return tt.classrooms.all()
-#        return cls.objects.filter(foreign__classroomset__timetables = tt).distinct()
 
 class TimetableGroup(ForeignReservable):
     type = "group"
-    # foreign = models.ForeignKey(timetable.models.Group, null=True, on_delete=models.CASCADE)
     foreign_id = models.IntegerField()
-    @classmethod
-    def by_timetable(cls, tt):
-        return tt.groups.all()
-        # return cls.objects.filter(foreign__groupset__timetables = tt).distinct()
 
 friprosveta_classes = [TimetableClassroom, FriprosvetaTeacher]
 #friprosveta_classes = [FriprosvetaActivity, FriprosvetaTeacher, TimetableClassroom, TimetableGroup]
