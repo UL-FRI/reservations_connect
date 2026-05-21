@@ -15,25 +15,6 @@ class ImportBatch(models.Model):
 class ForeignReservable(models.Model):
     reservable = models.ForeignKey(reservations.models.Reservable, on_delete=models.CASCADE)
 
-class WiseIzvajalec(ForeignReservable):
-    type = "teacher"
-    name = models.CharField(max_length = 255)
-
-class WiseSkupina(ForeignReservable):
-    type = "group"
-    name = models.CharField(max_length = 255)
-
-class WiseProstor(ForeignReservable):
-    type = "classroom"
-    name = models.CharField(max_length = 255)
-
-class WiseActivity(ForeignReservable):
-    type = "activity"
-    name = models.CharField(max_length = 255)
-    vrsta = models.CharField(max_length = 255)
-
-wise_classes = [WiseIzvajalec, WiseSkupina, WiseProstor, WiseActivity]
-
 class MetronikRoom(models.Model):
     def __unicode__(self):
         return u"{0} -> {1}".format(self.arhitektura, self.reservable)
