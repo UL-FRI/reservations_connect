@@ -15,25 +15,6 @@ class ImportBatch(models.Model):
 class ForeignReservable(models.Model):
     reservable = models.ForeignKey(reservations.models.Reservable, on_delete=models.CASCADE)
 
-class FriprosvetaActivity(ForeignReservable):
-    type = "activity"
-    foreign_id = models.IntegerField()
-
-class FriprosvetaTeacher(ForeignReservable):
-    type = "teacher"
-    foreign_id = models.IntegerField()
-
-class TimetableClassroom(ForeignReservable):
-    type = "classroom"
-    foreign_id = models.IntegerField()
-
-class TimetableGroup(ForeignReservable):
-    type = "group"
-    foreign_id = models.IntegerField()
-
-friprosveta_classes = [TimetableClassroom, FriprosvetaTeacher]
-#friprosveta_classes = [FriprosvetaActivity, FriprosvetaTeacher, TimetableClassroom, TimetableGroup]
-
 class WiseIzvajalec(ForeignReservable):
     type = "teacher"
     name = models.CharField(max_length = 255)

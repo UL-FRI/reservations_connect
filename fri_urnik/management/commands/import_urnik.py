@@ -23,7 +23,8 @@ from reservations_connect.fri_urnik.api import (
     get_allocations,
     get_current_timetable_slug,
 )
-from reservations_connect.models import FriprosvetaTeacher, ImportBatch, TimetableClassroom
+from reservations_connect.fri_urnik.models import UrnikClassroom, UrnikTeacher
+from reservations_connect.models import ImportBatch
 
 
 class Command(BaseCommand):
@@ -145,7 +146,7 @@ class Command(BaseCommand):
                 self.batch.reservations.add(reservation)
 
                 # Import classroom reservation
-                classroom = lookup_classroom(alloc.classroom_name)
+                classroom = lookup_classroom(alloc.classroom_name, self.reservableset)
                 reservation.reservables.add(classroom)
 
                 # Import teacher "reservations"
@@ -165,49 +166,32 @@ class Command(BaseCommand):
 @lru_cache(maxsize=None)
 def lookup_teacher(teacher_str: str, reservableset: ReservableSet) -> Reservable | None:
     # TODO: handle this better when we have IDs available
-    foreign_id = "fri-teacher-" + slugify(teacher_str)
-    
     try:
-        fr = FriprosvetaTeacher.objects.get(foreign_id=foreign_id)
+        fr = UrnikTeacher.objects.get(name=teacher_str)
         return fr.reservable
-    except FriprosvetaTeacher.DoesNotExist:
-        teacher, created = Reservable.objects.get_or_create(
+    except UrnikTeacher.DoesNotExist:
+        teacher = Reservable.objects.create(
             type="teacher",
-            slug=slugify(teacher_str),
-            defaults=dict(
-                name=teacher_str,
-            ),
+            slug=f"urnik-teacher-{slugify(teacher_str)}",
+            name=teacher_str,
         )
-        FriprosvetaTeacher.objects.create(reservable=teacher,foreign_id=foreign_id)
-        if created:
-            reservableset.reservables.add(teacher)
+        UrnikTeacher.objects.create(reservable=teacher, name=teacher_str)
+        reservableset.reservables.add(teacher)
         return teacher
 
-
-CLASSROOM_RE = re.compile(r".+ \((.+)\)")
-
-
 @lru_cache(maxsize=None)
-def lookup_classroom(classroom_name: str) -> Reservable | None:
+def lookup_classroom(classroom_name: str, reservableset: ReservableSet) -> Reservable | None:
     # TODO: handle this better when we have IDs available
-    match = CLASSROOM_RE.match(classroom_name)
-    if not match:
-        logging.warning("Classroom is not in correct format: %s", classroom_name)
-        return
-    foreign_id = "fri-" + match.group(1).lower()
-    
     try:
-        fr = TimetableClassroom.objects.get(foreign_id=foreign_id)
-        return fr.reservable
-    except TimetableClassroom.DoesNotExist:
-        r, created = Reservable.objects.get_or_create(
+        return UrnikClassroom.objects.get(name=classroom_name).reservable
+    except UrnikClassroom.DoesNotExist:
+        r = Reservable.objects.create(
             type="classroom",
-            slug=foreign_id,
-            defaults=dict(
-                name=classroom_name,
-            ),
+            slug=f"urnik-classroom-{slugify(classroom_name)}",
+            name=classroom_name,
         )
-        TimetableClassroom.objects.create(reservable=r,foreign_id=foreign_id)
+        UrnikClassroom.objects.create(reservable=r, name=classroom_name)
+        reservableset.reservables.add(r)
         return r
 
 
