@@ -151,7 +151,8 @@ def dedupe_reservations(reservations: list[dict]) -> list[dict]:
     seen = set()
     deduped = []
     for r in reservations:
-        key = (r["reason"], r["start"], r["end"], tuple(sorted(r["reservables"])))
+        # key = (r["reason"], r["start"], r["end"], tuple(sorted(r["reservables"])))
+        key = r["id"]
         if key not in seen:
             seen.add(key)
             deduped.append(r)
