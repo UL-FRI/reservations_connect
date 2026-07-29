@@ -14,18 +14,3 @@ class ImportBatch(models.Model):
 
 class ForeignReservable(models.Model):
     reservable = models.ForeignKey(reservations.models.Reservable, on_delete=models.CASCADE)
-
-class MetronikRoom(models.Model):
-    def __unicode__(self):
-        return u"{0} -> {1}".format(self.arhitektura, self.reservable)
-    reservable = models.ForeignKey(reservations.models.Reservable, null=True, on_delete=models.CASCADE)
-    arhitektura = models.CharField(max_length=256, blank=True, null=True)
-    tehnologija = models.CharField(max_length=256, blank=True, null=True)
-    opis = models.CharField(max_length=256, blank=True, null=True)
-    stevilka_sist_kljuca = models.CharField(max_length=256, blank=True, null=True)
-    oznake_sist_kljuca = models.CharField(max_length=256, blank=True, null=True)
-    oznaka_prostora = models.CharField(max_length=256, blank=True, null=True)
-    oznake_na_vratih = models.CharField(max_length=256, blank=True, null=True)
-    table_v_objektu = models.CharField(max_length=256, blank=True, null=True)
-    etaza = models.CharField(max_length=256, blank=True, null=True)
-    zap_st_prostora = models.CharField(max_length=256, blank=True, null=True)
