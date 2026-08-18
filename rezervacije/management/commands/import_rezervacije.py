@@ -67,7 +67,7 @@ class Command(BaseCommand):
         
         
         api_reservables = self._load_or_download("reservables", f"{self.base_url}/reservables/?page_size=100")
-        api_reservations = self._load_or_download("reservations", f"{self.base_url}/reservations/?page_size=100")   
+        api_reservations = self._load_or_download("reservations", f"{self.base_url}/reservations/?page_size=100&start={options['start_date']}")
         api_reservations = dedupe_reservations(api_reservations)
         reservables_by_id: dict[str, dict] = {r["id"]: r for r in api_reservables}
 
