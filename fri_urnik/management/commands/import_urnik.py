@@ -170,10 +170,12 @@ def lookup_teacher(teacher_str: str, reservableset: ReservableSet) -> Reservable
         fr = UrnikTeacher.objects.get(name=teacher_str)
         return fr.reservable
     except UrnikTeacher.DoesNotExist:
-        teacher = Reservable.objects.create(
+        teacher, _ = Reservable.objects.get_or_create(
             type="teacher",
             slug=f"urnik-teacher-{slugify(teacher_str)}",
-            name=teacher_str,
+            defaults=dict(
+                name=teacher_str,
+            )
         )
         UrnikTeacher.objects.create(reservable=teacher, name=teacher_str)
         reservableset.reservables.add(teacher)
