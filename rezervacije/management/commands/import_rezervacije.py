@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 from django.core.management.base import BaseCommand
 from django.db import transaction
 import requests
-from reservations.models import Reservable, Reservation
+from reservations.models import Reservable, ReservableType, Reservation
 
 
 import json
@@ -141,7 +141,10 @@ def get_reservable(data) -> Reservable | None:
     try:
         r = ExternalReservable.objects.get(foreign_id=data["id"], type=data["type"]).reservable
     except ExternalReservable.DoesNotExist:
-        r = Reservable.objects.create(name=name, slug=data["slug"], type=data["type"])
+        reservable_type, _ = ReservableType.objects.get_or_create(
+            slug=data["type"], defaults={"display_name": data["type"].title()}
+        )
+        r = Reservable.objects.create(name=name, slug=data["slug"], type=reservable_type)
         ExternalReservable.objects.create(foreign_id=data["id"], type=data["type"], reservable=r)
     
     _reservable_cache[data["id"]] = r

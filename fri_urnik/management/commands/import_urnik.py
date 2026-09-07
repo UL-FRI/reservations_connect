@@ -16,7 +16,7 @@ from zoneinfo import ZoneInfo
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils.text import slugify
-from reservations.models import Reservable, ReservableSet, Reservation
+from reservations.models import Reservable, ReservableSet, ReservableType, Reservation
 
 from reservations_connect.fri_urnik.api import (
     FRIUrnikAllocation,
@@ -170,8 +170,9 @@ def lookup_teacher(teacher_str: str, reservableset: ReservableSet) -> Reservable
         fr = UrnikTeacher.objects.get(name=teacher_str)
         return fr.reservable
     except UrnikTeacher.DoesNotExist:
+        teacher_type, _ = ReservableType.objects.get_or_create(slug="teacher", defaults={"display_name": "Teacher"})
         teacher, _ = Reservable.objects.get_or_create(
-            type="teacher",
+            type=teacher_type,
             slug=f"urnik-teacher-{slugify(teacher_str)}",
             defaults=dict(
                 name=teacher_str,
@@ -187,8 +188,9 @@ def lookup_classroom(classroom_name: str, reservableset: ReservableSet) -> Reser
     try:
         return UrnikClassroom.objects.get(name=classroom_name).reservable
     except UrnikClassroom.DoesNotExist:
+        classroom_type, _ = ReservableType.objects.get_or_create(slug="classroom", defaults={"display_name": "Classroom"})
         r = Reservable.objects.create(
-            type="classroom",
+            type=classroom_type,
             slug=f"urnik-classroom-{slugify(classroom_name)}",
             name=classroom_name,
         )
