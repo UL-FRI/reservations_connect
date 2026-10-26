@@ -1,5 +1,6 @@
 
-from datetime import date, datetime, timedelta
+from collections.abc import Iterable
+from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from reservations_connect.metronik.generated.metronik import (
@@ -38,7 +39,7 @@ def generate_timetable_transfer(metronik_room: MetronikRoom, day: date) -> Timet
     # Veljavnost je po prosnji metronic ne 1, ampak 10 dni.
     date_to = date_to_boundary + timedelta(days=10)
 
-    times = []
+    intervals = []
     for reservation in reservations:
         start = reservation.start.astimezone(METRONIK_TZ)
         end = reservation.end.astimezone(METRONIK_TZ)
@@ -50,12 +51,17 @@ def generate_timetable_transfer(metronik_room: MetronikRoom, day: date) -> Timet
         if start.date() > end.date():
             time_start = datetime.min.time()
 
-        times.append(TimeDescriptor(
+        intervals.append((time_start, time_end))
+
+    times = [
+        TimeDescriptor(
             occupied=True,
             from_value=time_start.strftime(HOUR_FORMAT),
             to=time_end.strftime(HOUR_FORMAT),
-        ))
-        
+        )
+        for time_start, time_end in normalize_intervals(intervals)
+    ]
+
     return TimetableTransfer(
         room=RoomDescriptor(
             faculty=faculty_for_room(metronik_room),
@@ -68,6 +74,18 @@ def generate_timetable_transfer(metronik_room: MetronikRoom, day: date) -> Timet
             time_descriptor=times,
         )
     )
+
+
+def normalize_intervals(intervals: Iterable[tuple[time, time]]) -> list[tuple[time, time]]:
+    """Sort intervals and merge those that overlap or touch."""
+    merged: list[tuple[time, time]] = []
+    for start, end in sorted(i for i in intervals if i[0] < i[1]):
+        if merged and start <= merged[-1][1]:
+            if end > merged[-1][1]:
+                merged[-1] = (merged[-1][0], end)
+        else:
+            merged.append((start, end))
+    return merged
 
 
 def generate_soap_envelope(metronik_room: MetronikRoom, day: date) -> WebServiceSoapTimetableTransferInput:

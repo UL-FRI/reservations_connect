@@ -52,6 +52,9 @@ def metronik_payloads(request):
             envelope = generate_soap_envelope(room, day)
             payloads.append({
                 "room": room.arhitektura,
+                "reservable_id": room.reservable.id,
+                "reservable__slug": room.reservable.slug,
+                "metronikroom_id": room.id,
                 "date": day.strftime("%Y-%m-%d"),
                 "endpoint": METRONIK_SOAP_ENDPOINT,
                 "soap_action": METRONIK_SOAP_ACTION,
